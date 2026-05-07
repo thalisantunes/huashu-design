@@ -105,11 +105,12 @@ console.log(`  output: ${MP4_OUT}`);
   
   // Security: Prevent data exfiltration by blocking XHR/fetch
   await warmupCtx.route('**/*', route => {
-    if (['fetch', 'xhr'].includes(route.request().resourceType())) {
-      route.abort('accessdenied');
-    } else {
-      route.continue();
+    const t = route.request().resourceType();
+    if (t === 'fetch' || t === 'xhr') {
+      console.warn(`[security] blocked ${t} → ${route.request().url()}`);
+      return route.abort('accessdenied');
     }
+    route.continue();
   });
   
   const warmupPage = await warmupCtx.newPage();
@@ -133,11 +134,12 @@ console.log(`  output: ${MP4_OUT}`);
 
   // Security: Prevent data exfiltration by blocking XHR/fetch
   await recordCtx.route('**/*', route => {
-    if (['fetch', 'xhr'].includes(route.request().resourceType())) {
-      route.abort('accessdenied');
-    } else {
-      route.continue();
+    const t = route.request().resourceType();
+    if (t === 'fetch' || t === 'xhr') {
+      console.warn(`[security] blocked ${t} → ${route.request().url()}`);
+      return route.abort('accessdenied');
     }
+    route.continue();
   });
 
   // Tell the page it's being recorded — animations.jsx Stage reads this

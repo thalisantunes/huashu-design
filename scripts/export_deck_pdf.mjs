@@ -60,11 +60,12 @@ async function main() {
 
   // Security: Prevent data exfiltration by blocking XHR/fetch
   await ctx.route('**/*', route => {
-    if (['fetch', 'xhr'].includes(route.request().resourceType())) {
-      route.abort('accessdenied');
-    } else {
-      route.continue();
+    const t = route.request().resourceType();
+    if (t === 'fetch' || t === 'xhr') {
+      console.warn(`[security] blocked ${t} → ${route.request().url()}`);
+      return route.abort('accessdenied');
     }
+    route.continue();
   });
 
   // 1) Render each HTML to its own PDF buffer

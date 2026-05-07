@@ -61,7 +61,9 @@ def verify_html(html_path, viewports=None, slides=0, output_dir=None, show=False
             
             # Security: Prevent data exfiltration by blocking XHR/fetch
             def route_handler(route):
-                if route.request.resource_type in ("fetch", "xhr"):
+                rt = route.request.resource_type
+                if rt in ("fetch", "xhr"):
+                    print(f"[security] blocked {rt} → {route.request.url}", file=sys.stderr)
                     route.abort("accessdenied")
                 else:
                     route.continue_()

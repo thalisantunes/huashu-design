@@ -921,6 +921,16 @@ async function html2pptx(htmlFile, pres, options = {}) {
         console.log(`Browser console: ${msg.text()}`);
       });
 
+      // Security: Prevent data exfiltration by blocking XHR/fetch
+      await page.route('**/*', route => {
+        const t = route.request().resourceType();
+        if (t === 'fetch' || t === 'xhr') {
+          console.warn(`[security] blocked ${t} → ${route.request().url()}`);
+          return route.abort('accessdenied');
+        }
+        route.continue();
+      });
+
       await page.goto(`file://${filePath}`);
 
       bodyDimensions = await getBodyDimensions(page);
