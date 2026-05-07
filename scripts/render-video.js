@@ -106,7 +106,10 @@ console.log(`  output: ${MP4_OUT}`);
   // Security: Prevent data exfiltration by blocking XHR/fetch
   await warmupCtx.route('**/*', route => {
     const t = route.request().resourceType();
-    if (t === 'fetch' || t === 'xhr') {
+    // Block exfiltration channels: fetch/xhr (active) + websocket/eventsource/ping
+    // (covert beacons not part of static-slide rendering). scripts/css/images/fonts
+    // continue normally so layout is unaffected.
+    if (t === 'fetch' || t === 'xhr' || t === 'websocket' || t === 'eventsource' || t === 'ping') {
       console.warn(`[security] blocked ${t} → ${route.request().url()}`);
       return route.abort('accessdenied');
     }
@@ -135,7 +138,10 @@ console.log(`  output: ${MP4_OUT}`);
   // Security: Prevent data exfiltration by blocking XHR/fetch
   await recordCtx.route('**/*', route => {
     const t = route.request().resourceType();
-    if (t === 'fetch' || t === 'xhr') {
+    // Block exfiltration channels: fetch/xhr (active) + websocket/eventsource/ping
+    // (covert beacons not part of static-slide rendering). scripts/css/images/fonts
+    // continue normally so layout is unaffected.
+    if (t === 'fetch' || t === 'xhr' || t === 'websocket' || t === 'eventsource' || t === 'ping') {
       console.warn(`[security] blocked ${t} → ${route.request().url()}`);
       return route.abort('accessdenied');
     }

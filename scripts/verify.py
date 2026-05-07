@@ -59,10 +59,12 @@ def verify_html(html_path, viewports=None, slides=0, output_dir=None, show=False
         for viewport in viewports:
             context = browser.new_context(viewport=viewport, device_scale_factor=2)
             
-            # Security: Prevent data exfiltration by blocking XHR/fetch
+            # Security: Prevent data exfiltration by blocking XHR/fetch +
+            # websocket/eventsource/ping (covert beacons). scripts/css/images/fonts
+            # continue normally so layout is unaffected.
             def route_handler(route):
                 rt = route.request.resource_type
-                if rt in ("fetch", "xhr"):
+                if rt in ("fetch", "xhr", "websocket", "eventsource", "ping"):
                     print(f"[security] blocked {rt} → {route.request.url}", file=sys.stderr)
                     route.abort("accessdenied")
                 else:
