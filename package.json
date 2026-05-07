@@ -1,0 +1,17 @@
+{
+  "name": "huashu-design",
+  "version": "2.0.0",
+  "description": "Huashu Design - An agent-agnostic skill for design generation",
+  "main": "scripts/render-video.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "playwright": "^1.42.1",
+    "pdf-lib": "^1.17.1",
+    "pptxgenjs": "^3.12.0",
+    "sharp": "^0.33.2"
+  },
+  "author": "Huasheng",
+  "license": "Personal Use Only"
+}

@@ -141,8 +141,19 @@ description: 花叔Design（Huashu-Design）——用HTML做高保真原型、�
 2. 官网 HTML 全文提取 inline SVG（80% 场景必用）：
    ```bash
    curl -A "Mozilla/5.0" -L https://<brand>.com -o assets/<brand>-brand/homepage.html
-   # 然后 grep <svg>...</svg> 提取 logo 节点
+   # 在 homepage.html 中定位 <svg>...</svg> 节点，复制其内容并另存为独立的 assets/<brand>-brand/logo.svg 文件。
+   # 之后在幻灯片 HTML 中只能通过 <img src="assets/<brand>-brand/logo.svg" alt="..."> 引用，绝不可粘贴 inline。
    ```
+
+   > ### ⚠️ REDLINE DE SEGURANÇA — Inline SVG Injection
+   >
+   > É **ESTRITAMENTE PROIBIDO** que a IA cole/injete tags `<svg>...</svg>` inline (vindas da web, de páginas oficiais, de press kits ou de qualquer fonte externa) diretamente no HTML do projeto.
+   >
+   > Todo SVG externo **DEVE** ser:
+   > 1. Salvo como arquivo próprio em `assets/<brand>-brand/<nome>.svg`;
+   > 2. Referenciado **exclusivamente** via `<img src="assets/<brand>-brand/<nome>.svg" alt="...">` (ou `background-image: url(...)` em CSS).
+   >
+   > **Por quê:** SVG é XML executável. Um `<svg>` inline pode carregar `<script>`, `<foreignObject>`, handlers `onload=` / `onerror=` e `<use href="...">` apontando para domínios remotos — todos vetores clássicos de XSS e SSRF que executam no contexto do documento. Carregar o SVG via `<img>` força o navegador a tratá-lo como imagem passiva, neutralizando scripts embutidos e bloqueando exfiltração silenciosa de dados.
 3. 官方社交媒体 avatar（最后手段）：GitHub/Twitter/LinkedIn 的公司头像通常是 400×400 或 800×800 透明底 PNG
 
 **3.2 产品图/渲染图（实体产品必需）**

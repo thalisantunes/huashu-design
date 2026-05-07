@@ -102,6 +102,16 @@ console.log(`  output: ${MP4_OUT}`);
   const warmupCtx = await browser.newContext({
     viewport: { width: WIDTH, height: HEIGHT },
   });
+  
+  // Security: Prevent data exfiltration by blocking XHR/fetch
+  await warmupCtx.route('**/*', route => {
+    if (['fetch', 'xhr'].includes(route.request().resourceType())) {
+      route.abort('accessdenied');
+    } else {
+      route.continue();
+    }
+  });
+  
   const warmupPage = await warmupCtx.newPage();
   // 'load' not 'networkidle' — unpkg/Google Fonts can keep connections alive
   // past our 30s budget even after all critical resources are in. __ready
@@ -119,6 +129,15 @@ console.log(`  output: ${MP4_OUT}`);
       dir: TMP_DIR,
       size: { width: WIDTH, height: HEIGHT },
     },
+  });
+
+  // Security: Prevent data exfiltration by blocking XHR/fetch
+  await recordCtx.route('**/*', route => {
+    if (['fetch', 'xhr'].includes(route.request().resourceType())) {
+      route.abort('accessdenied');
+    } else {
+      route.continue();
+    }
   });
 
   // Tell the page it's being recorded — animations.jsx Stage reads this

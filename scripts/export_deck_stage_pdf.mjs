@@ -62,6 +62,16 @@ async function main() {
 
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width, height } });
+
+  // Security: Prevent data exfiltration by blocking XHR/fetch
+  await ctx.route('**/*', route => {
+    if (['fetch', 'xhr'].includes(route.request().resourceType())) {
+      route.abort('accessdenied');
+    } else {
+      route.continue();
+    }
+  });
+
   const page = await ctx.newPage();
 
   await page.goto('file://' + htmlAbs, { waitUntil: 'networkidle' });
