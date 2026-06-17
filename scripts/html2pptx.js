@@ -921,6 +921,19 @@ async function html2pptx(htmlFile, pres, options = {}) {
         console.log(`Browser console: ${msg.text()}`);
       });
 
+      // Security: Prevent data exfiltration by blocking XHR/fetch
+      await page.route('**/*', route => {
+        const t = route.request().resourceType();
+        // Block exfiltration channels: fetch/xhr (active) + websocket/eventsource/ping
+        // (covert beacons not part of static-slide rendering). scripts/css/images/fonts
+        // continue normally so layout is unaffected.
+        if (t === 'fetch' || t === 'xhr' || t === 'websocket' || t === 'eventsource' || t === 'ping') {
+          console.warn(`[security] blocked ${t} → ${route.request().url()}`);
+          return route.abort('accessdenied');
+        }
+        route.continue();
+      });
+
       await page.goto(`file://${filePath}`);
 
       bodyDimensions = await getBodyDimensions(page);

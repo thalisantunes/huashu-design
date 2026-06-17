@@ -88,6 +88,13 @@ if [ -z "$DURATION" ]; then
   echo "✗ Could not read video duration" >&2
   exit 1
 fi
+# Sanitize before interpolating into the awk subshell below: must be a plain
+# int or float. Anything else (shell metachars, command substitution, etc.)
+# is rejected to prevent command-injection via a crafted ffprobe response.
+if ! [[ "$DURATION" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+  echo "✗ Invalid duration format: $DURATION" >&2
+  exit 1
+fi
 FADE_OUT_START=$(awk "BEGIN { d = $DURATION - 1; if (d < 0) d = 0; print d }")
 
 echo "▸ Mixing BGM into video"

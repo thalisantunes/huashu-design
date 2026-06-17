@@ -102,6 +102,20 @@ console.log(`  output: ${MP4_OUT}`);
   const warmupCtx = await browser.newContext({
     viewport: { width: WIDTH, height: HEIGHT },
   });
+  
+  // Security: Prevent data exfiltration by blocking XHR/fetch
+  await warmupCtx.route('**/*', route => {
+    const t = route.request().resourceType();
+    // Block exfiltration channels: fetch/xhr (active) + websocket/eventsource/ping
+    // (covert beacons not part of static-slide rendering). scripts/css/images/fonts
+    // continue normally so layout is unaffected.
+    if (t === 'fetch' || t === 'xhr' || t === 'websocket' || t === 'eventsource' || t === 'ping') {
+      console.warn(`[security] blocked ${t} → ${route.request().url()}`);
+      return route.abort('accessdenied');
+    }
+    route.continue();
+  });
+  
   const warmupPage = await warmupCtx.newPage();
   // 'load' not 'networkidle' — unpkg/Google Fonts can keep connections alive
   // past our 30s budget even after all critical resources are in. __ready
@@ -119,6 +133,19 @@ console.log(`  output: ${MP4_OUT}`);
       dir: TMP_DIR,
       size: { width: WIDTH, height: HEIGHT },
     },
+  });
+
+  // Security: Prevent data exfiltration by blocking XHR/fetch
+  await recordCtx.route('**/*', route => {
+    const t = route.request().resourceType();
+    // Block exfiltration channels: fetch/xhr (active) + websocket/eventsource/ping
+    // (covert beacons not part of static-slide rendering). scripts/css/images/fonts
+    // continue normally so layout is unaffected.
+    if (t === 'fetch' || t === 'xhr' || t === 'websocket' || t === 'eventsource' || t === 'ping') {
+      console.warn(`[security] blocked ${t} → ${route.request().url()}`);
+      return route.abort('accessdenied');
+    }
+    route.continue();
   });
 
   // Tell the page it's being recorded — animations.jsx Stage reads this
